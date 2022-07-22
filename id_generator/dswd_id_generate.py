@@ -8,19 +8,24 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 import math
 import pandas as pd
+import numpy as np
+import io
 	
 #https://www.reportlab.com/snippets/30/
-canvas = Canvas("Pantawid-IDs.pdf", pagesize=A4 )
-canvas.setTitle("DSWD-PANTAWID ID")
+
+df = pd.read_excel("ID.xlsx","Sheet1")  
+df_addr = df[['PROVINCE','CITY/MUNICIPALITY','BARANGAY']].drop_duplicates()
 img = ImageReader('./images/id.jpg')
 registerFont(TTFont('arial-narrow-bold','C:\\windows\\fonts\\ARIALNB.TTF'))
 print('Initializing...')
-df = pd.read_excel("ID.xlsx","Sheet1")  
+
 def add_page(df,page):
 	
 	index = ((page-1)*10)
 
 	dfx = df.iloc[index:index+10]
+	dfx = dfx.sort_values(['FULL NAME'], ascending = [True])
+
 	scale = .269
 	x = 54
 	y = 10
@@ -69,16 +74,19 @@ def add_page(df,page):
 		canvas.setFont('arial-narrow-bold',8)
 		canvas.drawCentredString(x+185+247,668+35-156*i,prov2)
 		
-		print('Genarated: ',hhid1)
-		print('Genarated: ',hhid2)
-
 	canvas.drawCentredString(x+185+247+35,20,'Page '+ str(page))
-	canvas.drawCentredString(x+210+30,668+100+50+10,'Property of Department of Social Welfare and Development')
-	canvas.drawString(x,30,'Department of Social Welfare and Development')
+	canvas.drawCentredString(x+210+30,668+100+50+10,prov1+', '+muni1+', '+brgy1)
+	canvas.drawString(x,30,'Department of Social Welfare and Development Field Office XII')
 	canvas.drawString(x,20,'Pantawid Pamilyang Pilipino Program')
 	canvas.showPage()
 
-for i in range(1,math.ceil(len(df.index)/10)+1):
-	add_page(df,i)
-
-canvas.save()
+for p,m,b in df_addr.values:
+	print(p,m,b,' - success')
+	buffer = io.BytesIO()
+	canvas = Canvas(("./release/Pantawid_id_"+p+'_'+m+'_'+b+".pdf").replace(' ','_').replace("'","").replace("\\","").lower(), pagesize=A4,encrypt="dswd@123")
+	canvas.setTitle("DSWD-PANTAWID ID")
+	df_b = df.query('`CITY/MUNICIPALITY`=="' + m + '" & `BARANGAY`=="' + b + '" ')
+	for i in range(1,math.ceil(len(df_b.index)/10)+1):
+		add_page(df_b,i)
+	canvas.save()
+print('Done!')
