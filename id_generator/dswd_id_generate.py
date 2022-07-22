@@ -12,8 +12,9 @@ import pandas as pd
 #https://www.reportlab.com/snippets/30/
 canvas = Canvas("Pantawid-IDs.pdf", pagesize=A4 )
 canvas.setTitle("DSWD-PANTAWID ID")
-img = ImageReader('bau.jpg')
+img = ImageReader('./images/id.jpg')
 registerFont(TTFont('arial-narrow-bold','C:\\windows\\fonts\\ARIALNB.TTF'))
+print('Initializing...')
 df = pd.read_excel("ID.xlsx","Sheet1")  
 def add_page(df,page):
 	
@@ -25,14 +26,6 @@ def add_page(df,page):
 	y = 10
 	w = 242
 	h = 153
-
-	# Set font to Times New Roman with 12-point size
-	canvas.setFont("Times-Roman", 12)
-
-	# Draw blue text one inch from the left and ten
-	# inches from the bottom
-	canvas.setFillColor(blue)
-	canvas.drawString(1 * inch, 10 * inch, "Blue text")
 
 	for i in range(0,5):
 		dfxx  =  dfx.iloc[i*2:i*2+2]
